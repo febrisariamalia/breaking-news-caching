@@ -1,7 +1,3 @@
-
-```yaml
-version: '3.8'
-
 services:
   varnish:
     image: varnish:7.3
