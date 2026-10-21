@@ -1,0 +1,45 @@
+
+```yaml
+version: '3.8'
+
+services:
+  varnish:
+    image: varnish:7.3
+    ports:
+      - "80:80"
+    networks:
+      - news-network
+    depends_on:
+      - web-app
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 256M
+
+  web-app:
+    image: nginx:alpine
+    networks:
+      - news-network
+    depends_on:
+      - redis
+    # Nginx diisolasi: tidak ada blok 'ports' eksternal, hanya Varnish yang bisa mengaksesnya via jaringan internal
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 128M
+
+  redis:
+    image: redis:alpine
+    networks:
+      - news-network
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 128M
+
+networks:
+  news-network:
+    driver: bridge
