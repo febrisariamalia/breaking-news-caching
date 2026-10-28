@@ -1,0 +1,88 @@
+<mxGraphModel dx="1467" dy="788" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+  <root>
+    <mxCell id="0" />
+    <mxCell id="1" parent="0" />
+    
+    <mxCell id="net" parent="1" style="rounded=0;whiteSpace=wrap;html=1;dashed=1;fillColor=none;strokeColor=#666666;verticalAlign=top;align=left;spacingLeft=10;fontStyle=1;fontSize=12;" value="news-network (Docker Bridge)" vertex="1">
+      <mxGeometry height="680" width="850" x="50" y="130" as="geometry" />
+    </mxCell>
+    
+    <mxCell id="user" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;" value="&lt;b&gt;User&lt;/b&gt;&lt;br&gt;(1000 VU - Breaking News Traffic)" vertex="1">
+      <mxGeometry height="60" width="240" x="340" y="30" as="geometry" />
+    </mxCell>
+    
+    <mxCell id="varnish" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" value="&lt;b&gt;Varnish Cache&lt;/b&gt; (Port 80, publik)&lt;br&gt;Director + health probe&lt;br&gt;Grace mode (sajikan stale saat backend mati)" vertex="1">
+      <mxGeometry height="90" width="300" x="310" y="180" as="geometry" />
+    </mxCell>
+    
+    <mxCell id="nginx1" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;dashed=1;" value="&lt;b&gt;Nginx #1&lt;/b&gt;&lt;br&gt;MATI / FAILED&lt;br&gt;(Reverse proxy + rate limiting)" vertex="1">
+      <mxGeometry height="80" width="200" x="170" y="360" as="geometry" />
+    </mxCell>
+    
+    <mxCell id="x1" parent="1" style="text;html=1;align=center;verticalAlign=middle;fontSize=40;fontColor=#CC0000;fontStyle=1;" value="X" vertex="1">
+      <mxGeometry height="40" width="40" x="340" y="345" as="geometry" />
+    </mxCell>
+    
+    <mxCell id="nginx2" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" value="&lt;b&gt;Nginx #2 (replika)&lt;/b&gt;&lt;br&gt;SEHAT - ambil alih trafik&lt;br&gt;(Reverse proxy + rate limiting)" vertex="1">
+      <mxGeometry height="80" width="200" x="540" y="360" as="geometry" />
+    </mxCell>
+    
+    <mxCell id="app" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" value="&lt;b&gt;Web App Pool&lt;/b&gt; (app-1 &amp;amp; app-2, port 5000)&lt;br&gt;Endpoint /health" vertex="1">
+      <mxGeometry height="70" width="380" x="270" y="520" as="geometry" />
+    </mxCell>
+    
+    <mxCell id="redis" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;" value="&lt;b&gt;Redis Cache&lt;/b&gt;&lt;br&gt;(Port 6379, internal)&lt;br&gt;allkeys-lru" vertex="1">
+      <mxGeometry height="80" width="200" x="190" y="680" as="geometry" />
+    </mxCell>
+    
+    <mxCell id="db" parent="1" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=12;fillColor=#e1d5e7;strokeColor=#9673a6;" value="&lt;b&gt;Database Utama&lt;/b&gt;&lt;br&gt;(MySQL/PostgreSQL 5432)" vertex="1">
+      <mxGeometry height="100" width="200" x="540" y="670" as="geometry" />
+    </mxCell>
+    
+    <mxCell id="error_page" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;dashed=1;" value="&lt;b&gt;Custom 503 Error (Varnish vcl_synth)&lt;/b&gt;&lt;br&gt;Melindungi Origin dari Thundering Herd" vertex="1">
+      <mxGeometry height="70" width="240" x="650" y="190" as="geometry" />
+    </mxCell>
+
+    <mxCell id="e1" edge="1" parent="1" source="user" style="endArrow=classic;html=1;strokeWidth=2;" target="varnish" value="Request">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    
+    <mxCell id="e2" edge="1" parent="1" source="varnish" style="endArrow=classic;html=1;strokeColor=#82b366;fontColor=#2d7600;strokeWidth=2;exitX=0;exitY=0.5;entryX=0;entryY=0.5;" target="user" value="Cache HIT / stale (grace)">
+      <mxGeometry relative="1" as="geometry">
+        <Array as="points">
+          <mxPoint x="190" y="225" />
+          <mxPoint x="190" y="60" />
+        </Array>
+      </mxGeometry>
+    </mxCell>
+    
+    <mxCell id="e3" edge="1" parent="1" source="varnish" style="endArrow=classic;html=1;strokeColor=#b85450;dashed=1;fontColor=#b85450;" target="nginx1" value="Probe gagal: dikeluarkan dari pool">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    
+    <mxCell id="e4" edge="1" parent="1" source="varnish" style="endArrow=classic;html=1;strokeColor=#2d7600;fontColor=#2d7600;strokeWidth=2;" target="nginx2" value="Cache MISS: failover ke Nginx sehat">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    
+    <mxCell id="e5" edge="1" parent="1" source="nginx2" style="endArrow=classic;html=1;strokeColor=#2d7600;strokeWidth=2;" target="app" value="">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    
+    <mxCell id="e6" edge="1" parent="1" source="varnish" style="endArrow=classic;html=1;strokeColor=#d79b00;dashed=1;strokeWidth=2;fontColor=#b36b00;exitX=1;exitY=0.5;entryX=0;entryY=0.5;" target="error_page" value="Semua Nginx Mati">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    
+    <mxCell id="e7" edge="1" parent="1" source="app" style="endArrow=classic;html=1;" target="redis" value="Cek cache">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    
+    <mxCell id="e8" edge="1" parent="1" source="app" style="endArrow=classic;html=1;" target="db" value="Cache miss di Redis">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    
+    <mxCell id="legend" parent="1" style="text;html=1;align=left;verticalAlign=top;whiteSpace=wrap;fontSize=11;" value="&lt;b&gt;Keterangan jalur:&lt;/b&gt;&lt;br&gt;Hijau tebal = jalur normal / failover ke Nginx replika&lt;br&gt;Oranye putus-putus = Return 503 dari memori Varnish untuk melindungi Origin saat semua backend mati&lt;br&gt;Merah putus-putus = backend gagal health probe&lt;br&gt;Cache HIT dilayani Varnish tanpa menyentuh backend sama sekali" vertex="1">
+      <mxGeometry height="70" width="700" x="100" y="830" as="geometry" />
+    </mxCell>
+    
+  </root>
+</mxGraphModel>
