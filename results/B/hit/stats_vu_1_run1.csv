@@ -1,0 +1,6 @@
+news-app-varnish-1,0.26%,97.32MiB / 256MiB
+news-app-nginx2-1,0.15%,4.605MiB / 128MiB
+news-app-nginx1-1,0.00%,4.57MiB / 128MiB
+news-app-app1-1,0.33%,69.73MiB / 256MiB
+news-app-app2-1,0.32%,68.83MiB / 256MiB
+news-app-redis-1,0.88%,4.82MiB / 192MiB

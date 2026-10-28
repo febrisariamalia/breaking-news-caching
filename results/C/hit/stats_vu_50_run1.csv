@@ -1,0 +1,6 @@
+b-varnish-1,0.14%,97.02MiB / 256MiB
+b-nginx2-1,0.00%,9.457MiB / 128MiB
+b-nginx1-1,0.00%,4.73MiB / 128MiB
+b-app2-1,28.78%,69.61MiB / 256MiB
+b-app1-1,0.07%,69.14MiB / 256MiB
+b-redis-1,0.84%,4.766MiB / 192MiB

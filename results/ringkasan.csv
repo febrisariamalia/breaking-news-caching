@@ -1,0 +1,3 @@
+config,scenario,vu,rps,p50,p95,p99,error_pct,cache_hit_pct
+B,hit,1,497.16,1.76,2.42,3.1,0.0,100.0
+B,hit,10,2065.15,2.36,8.19,59.45,0.0,100.0
