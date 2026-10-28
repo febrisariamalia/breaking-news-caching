@@ -1,0 +1,140 @@
+# Multi-Tier Edge Caching - versi High Availability (tanpa SPOF di Nginx)
+# Jalur normal : Varnish -> Nginx (nginx1/nginx2) -> App (app1/app2) -> Redis
+# Jalur darurat: Varnish -> App (bypass Nginx) bila semua Nginx gagal health probe
+# Jalur cache  : Cache HIT / stale (grace) dilayani Varnish tanpa menyentuh backend
+
+x-app: &app-common
+  build: ../../app
+  environment:
+    REDIS_HOST: redis
+    REDIS_PORT: "6379"
+  expose:
+    - "5000"
+  depends_on:
+    redis:
+      condition: service_healthy
+  networks:
+    - news-network
+  mem_limit: 256m
+  cpus: 0.50
+  restart: unless-stopped
+  healthcheck:
+    test:
+      - CMD
+      - python
+      - -c
+      - "import urllib.request; urllib.request.urlopen('http://127.0.0.1:5000/health', timeout=2)"
+    interval: 10s
+    timeout: 3s
+    retries: 5
+
+x-nginx: &nginx-common
+  image: nginx:alpine
+  volumes:
+    - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+  depends_on:
+    app1:
+      condition: service_started
+    app2:
+      condition: service_started
+    app3:
+      condition: service_started
+    app4:
+      condition: service_started
+  networks:
+    - news-network
+  mem_limit: 128m
+  cpus: 0.50
+  restart: unless-stopped
+  healthcheck:
+    test:
+      - CMD
+      - wget
+      - -q
+      - -O
+      - /dev/null
+      - http://127.0.0.1:8080/health
+    interval: 10s
+    timeout: 3s
+    retries: 5
+
+services:
+  varnish:
+    image: varnish:7.3
+    ports:
+      - "80:80"
+    volumes:
+      - ./varnish/default.vcl:/etc/varnish/default.vcl:ro
+    command:
+      - varnishd
+      - -F
+      - -f
+      - /etc/varnish/default.vcl
+      - -a
+      - :80
+      - -s
+      - malloc,128m
+    # Sengaja service_started (bukan service_healthy): Varnish tidak boleh
+    # ikut mati/menunggu hanya karena satu Nginx tidak sehat. Nama host hanya
+    # perlu ada di DNS Docker saat VCL dimuat; kesehatan dicek oleh probe VCL.
+    depends_on:
+      nginx1:
+        condition: service_started
+      nginx2:
+        condition: service_started
+      app1:
+        condition: service_started
+      app2:
+        condition: service_started
+    networks:
+      - news-network
+    mem_limit: 256m
+    cpus: 0.50
+    restart: unless-stopped
+
+  nginx1:
+    <<: *nginx-common
+
+  nginx2:
+    <<: *nginx-common
+
+  app1:
+    <<: *app-common
+
+  app2:
+    <<: *app-common
+
+  app3:
+    <<: *app-common
+
+  app4:
+    <<: *app-common
+
+  redis:
+    image: redis:7-alpine
+    command:
+      - redis-server
+      - --maxmemory
+      - 128mb
+      - --maxmemory-policy
+      - allkeys-lru
+    expose:
+      - "6379"
+    networks:
+      - news-network
+    mem_limit: 192m
+    cpus: 0.50
+    restart: unless-stopped
+    healthcheck:
+      test:
+        - CMD
+        - redis-cli
+        - ping
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
+networks:
+  news-network:
+    name: news-network
+    driver: bridge
