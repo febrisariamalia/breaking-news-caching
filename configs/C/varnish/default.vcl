@@ -126,7 +126,7 @@ sub vcl_backend_response {
 sub vcl_backend_error {
     set beresp.http.Content-Type = "application/json; charset=utf-8";
     set beresp.status = 503;
-    synthetic({"{"error":"Layanan sementara tidak tersedia" }"});
+    synthetic("Service temporarily unavailable");
     return (deliver);
 }
 

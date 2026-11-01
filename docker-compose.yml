@@ -4,7 +4,7 @@
 # Jalur cache  : Cache HIT / stale (grace) dilayani Varnish tanpa menyentuh backend
 
 x-app: &app-common
-  build: ../../app
+  build: ./app
   environment:
     REDIS_HOST: redis
     REDIS_PORT: "6379"
